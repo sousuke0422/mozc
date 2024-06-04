@@ -74,7 +74,7 @@ COLORREF GetTextColor(TextRenderer::FONT_TYPE type) {
     // case TextRenderer::FONTSET_CANDIDATE:
     //   return RGB(0x00, 0x00, 0x00);
     case TextRenderer::FONTSET_CANDIDATE:
-      return RGB(0xff, 0xff, 0xff);
+      return RGB(0x99, 0x99, 0x99);
     case TextRenderer::FONTSET_DESCRIPTION:
       return RGB(0x88, 0x88, 0x88);
     case TextRenderer::FONTSET_FOOTER_INDEX:
@@ -94,20 +94,30 @@ COLORREF GetTextColor(TextRenderer::FONT_TYPE type) {
   const auto &infostyle = style.infolist_style();
   switch (type) {
     case TextRenderer::FONTSET_INFOLIST_CAPTION:
-      return RGB(infostyle.caption_style().foreground_color().r(),
-                 infostyle.caption_style().foreground_color().g(),
-                 infostyle.caption_style().foreground_color().b());
+      return RGB(0x222, 0x222, 0x222);
     case TextRenderer::FONTSET_INFOLIST_TITLE:
-      return RGB(infostyle.title_style().foreground_color().r(),
-                 infostyle.title_style().foreground_color().g(),
-                 infostyle.title_style().foreground_color().b());
+      return RGB(0x222, 0x222, 0x222);
     case TextRenderer::FONTSET_INFOLIST_DESCRIPTION:
-      return RGB(infostyle.description_style().foreground_color().r(),
-                 infostyle.description_style().foreground_color().g(),
-                 infostyle.description_style().foreground_color().b());
+      return RGB(0x222, 0x222, 0x222);
     default:
       break;
   }
+  // switch (type) {
+  //   case TextRenderer::FONTSET_INFOLIST_CAPTION:
+  //     return RGB(infostyle.caption_style().foreground_color().r(),
+  //                infostyle.caption_style().foreground_color().g(),
+  //                infostyle.caption_style().foreground_color().b());
+  //   case TextRenderer::FONTSET_INFOLIST_TITLE:
+  //     return RGB(infostyle.title_style().foreground_color().r(),
+  //                infostyle.title_style().foreground_color().g(),
+  //                infostyle.title_style().foreground_color().b());
+  //   case TextRenderer::FONTSET_INFOLIST_DESCRIPTION:
+  //     return RGB(infostyle.description_style().foreground_color().r(),
+  //                infostyle.description_style().foreground_color().g(),
+  //                infostyle.description_style().foreground_color().b());
+  //   default:
+  //     break;
+  // }
 
   LOG(DFATAL) << "Unknown type: " << type;
   return RGB(0, 0, 0);
