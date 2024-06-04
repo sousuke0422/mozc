@@ -138,9 +138,9 @@ void RendererStyleHandlerImpl::GetDefaultRendererStyle(RendererStyle *style) {
   color->set_r(96);
   color->set_r(96);
 
-  style->mutable_footer_top_color()->set_r(0xff);
-  style->mutable_footer_top_color()->set_g(0xff);
-  style->mutable_footer_top_color()->set_b(0xff);
+  style->mutable_footer_top_color()->set_r(0x00);
+  style->mutable_footer_top_color()->set_g(0x00);
+  style->mutable_footer_top_color()->set_b(0x00);
 
   style->mutable_footer_bottom_color()->set_r(0xee);
   style->mutable_footer_bottom_color()->set_g(0xee);
