@@ -87,6 +87,7 @@ void RendererStyleHandlerImpl::GetDefaultRendererStyle(RendererStyle *style) {
   style->mutable_border_color()->set_r(0x96);
   style->mutable_border_color()->set_g(0x96);
   style->mutable_border_color()->set_b(0x96);
+  
 
   RendererStyle::TextStyle *shortcutStyle = style->add_text_styles();
   shortcutStyle->set_font_size(14 * scale_factor_y);
