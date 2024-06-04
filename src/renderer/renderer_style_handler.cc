@@ -93,9 +93,12 @@ void RendererStyleHandlerImpl::GetDefaultRendererStyle(RendererStyle *style) {
   shortcutStyle->mutable_foreground_color()->set_r(0x77);
   shortcutStyle->mutable_foreground_color()->set_g(0x77);
   shortcutStyle->mutable_foreground_color()->set_b(0x77);
-  shortcutStyle->mutable_background_color()->set_r(0xf3);
-  shortcutStyle->mutable_background_color()->set_g(0xf4);
-  shortcutStyle->mutable_background_color()->set_b(0xff);
+  // shortcutStyle->mutable_background_color()->set_r(0xf3);
+  // shortcutStyle->mutable_background_color()->set_g(0xf4);
+  // shortcutStyle->mutable_background_color()->set_b(0xff);
+  shortcutStyle->mutable_background_color()->set_r(0x0b);
+  shortcutStyle->mutable_background_color()->set_g(0x0a);
+  shortcutStyle->mutable_background_color()->set_b(0x00);
   shortcutStyle->set_left_padding(8 * scale_factor_x);
   shortcutStyle->set_right_padding(8 * scale_factor_x);
 

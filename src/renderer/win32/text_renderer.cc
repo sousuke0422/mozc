@@ -71,8 +71,10 @@ COLORREF GetTextColor(TextRenderer::FONT_TYPE type) {
   switch (type) {
     case TextRenderer::FONTSET_SHORTCUT:
       return RGB(0x61, 0x61, 0x61);
+    // case TextRenderer::FONTSET_CANDIDATE:
+    //   return RGB(0x00, 0x00, 0x00);
     case TextRenderer::FONTSET_CANDIDATE:
-      return RGB(0x00, 0x00, 0x00);
+      return RGB(0x00, 0x00, 0xff);
     case TextRenderer::FONTSET_DESCRIPTION:
       return RGB(0x88, 0x88, 0x88);
     case TextRenderer::FONTSET_FOOTER_INDEX:
