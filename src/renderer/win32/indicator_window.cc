@@ -254,6 +254,9 @@ class IndicatorWindow::WindowImpl
     LOGFONT logfont = GetMessageBoxLogFont();
     info.label_font = mozc::win32::WideToUtf8(logfont.lfFaceName);
 
+// ksk
+    // info.frame_color = RGBColor(1, 122, 204);
+    // info.blur_color = RGBColor(1, 122, 204);
     info.frame_color = RGBColor(1, 122, 204);
     info.blur_color = RGBColor(1, 122, 204);
     info.rect_width = ceil(dpi_scaling_ * 45.0);   // snap to pixel alignment

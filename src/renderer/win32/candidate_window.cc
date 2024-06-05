@@ -83,11 +83,15 @@ constexpr char kMinimumCandidateAndDescriptionWidthAsString[] =
 const COLORREF kFrameColor = RGB(0x96, 0x96, 0x96);
 const COLORREF kShortcutBackgroundColor = RGB(0xf3, 0xf4, 0xff);
 const COLORREF kSelectedRowBackgroundColor = RGB(0xd1, 0xea, 0xff);
-const COLORREF kDefaultBackgroundColor = RGB(0xff, 0xff, 0xff);
+// ksk
+// const COLORREF kDefaultBackgroundColor = RGB(0xff, 0xff, 0xff);
+const COLORREF kDefaultBackgroundColor = RGB(0x00, 0x00, 0x0);
 const COLORREF kSelectedRowFrameColor = RGB(0x7f, 0xac, 0xdd);
 const COLORREF kIndicatorBackgroundColor = RGB(0xe0, 0xe0, 0xe0);
 const COLORREF kIndicatorColor = RGB(0x75, 0x90, 0xb8);
-const COLORREF kFooterTopColor = RGB(0xff, 0xff, 0xff);
+// ksk
+// const COLORREF kFooterTopColor = RGB(0xff, 0xff, 0xff);
+const COLORREF kFooterTopColor = RGB(0x00, 0x00, 0x00);
 const COLORREF kFooterBottomColor = RGB(0xee, 0xee, 0xee);
 
 // ------------------------------------------------------------------------

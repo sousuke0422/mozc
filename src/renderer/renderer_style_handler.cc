@@ -94,6 +94,7 @@ void RendererStyleHandlerImpl::GetDefaultRendererStyle(RendererStyle *style) {
   shortcutStyle->mutable_foreground_color()->set_r(0x77);
   shortcutStyle->mutable_foreground_color()->set_g(0x77);
   shortcutStyle->mutable_foreground_color()->set_b(0x77);
+  // ksk
   // shortcutStyle->mutable_background_color()->set_r(0xf3);
   // shortcutStyle->mutable_background_color()->set_g(0xf4);
   // shortcutStyle->mutable_background_color()->set_b(0xff);
