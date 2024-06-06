@@ -30,8 +30,8 @@
 #include "renderer/renderer_style_handler.h"
 
 #if defined(_WIN32)
-#include <windows.h>
 #include <wil/resource.h>
+#include <windows.h>
 #endif  // _WIN32
 
 #include "base/singleton.h"
@@ -87,7 +87,6 @@ void RendererStyleHandlerImpl::GetDefaultRendererStyle(RendererStyle *style) {
   style->mutable_border_color()->set_r(0x96);
   style->mutable_border_color()->set_g(0x96);
   style->mutable_border_color()->set_b(0x96);
-  
 
   RendererStyle::TextStyle *shortcutStyle = style->add_text_styles();
   shortcutStyle->set_font_size(14 * scale_factor_y);
@@ -161,19 +160,27 @@ void RendererStyleHandlerImpl::GetDefaultRendererStyle(RendererStyle *style) {
   style->mutable_scrollbar_background_color()->set_g(0xe0);
   style->mutable_scrollbar_background_color()->set_b(0xe0);
 
-  style->mutable_scrollbar_indicator_color()->set_r(0x75);
-  style->mutable_scrollbar_indicator_color()->set_g(0x90);
-  style->mutable_scrollbar_indicator_color()->set_b(0xb8);
+  // ksk これなんだろう…。スクロールバーの色かな？
+  // style->mutable_scrollbar_indicator_color()->set_r(0x75);
+  // style->mutable_scrollbar_indicator_color()->set_g(0x90);
+  // style->mutable_scrollbar_indicator_color()->set_b(0xb8);
+  style->mutable_scrollbar_indicator_color()->set_r(0xa5);
+  style->mutable_scrollbar_indicator_color()->set_g(0xc0);
+  style->mutable_scrollbar_indicator_color()->set_b(0xf8);
 
   RendererStyle::InfolistStyle *infostyle = style->mutable_infolist_style();
+  // ksk 用例はここだろうな
   infostyle->set_caption_string("用例");
   infostyle->set_caption_height(20 * scale_factor_y);
   infostyle->set_caption_padding(1);
   infostyle->mutable_caption_style()->set_font_size(12 * scale_factor_y);
   infostyle->mutable_caption_style()->set_left_padding(2 * scale_factor_x);
-  infostyle->mutable_caption_background_color()->set_r(0xec);
-  infostyle->mutable_caption_background_color()->set_g(0xf0);
-  infostyle->mutable_caption_background_color()->set_b(0xfa);
+  // infostyle->mutable_caption_background_color()->set_r(0xec);
+  // infostyle->mutable_caption_background_color()->set_g(0xf0);
+  // infostyle->mutable_caption_background_color()->set_b(0xfa);
+  infostyle->mutable_caption_background_color()->set_r(0x1c);
+  infostyle->mutable_caption_background_color()->set_g(0x00);
+  infostyle->mutable_caption_background_color()->set_b(0x0a);
 
   infostyle->set_window_border(1);  // non-scalable
   infostyle->set_row_rect_padding(2 * scale_factor_x);
