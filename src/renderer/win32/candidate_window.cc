@@ -87,8 +87,9 @@ const COLORREF kFrameColor = RGB(0x76, 0x76, 0x76);
 const COLORREF kShortcutBackgroundColor = RGB(0x03, 0x04, 0x0f);
 // const COLORREF kSelectedRowBackgroundColor = RGB(0xd1, 0xea, 0xff);
 const COLORREF kSelectedRowBackgroundColor = RGB(0x21, 0x3a, 0x4f);
+// kskこれが背景色っぽい
 // const COLORREF kDefaultBackgroundColor = RGB(0xff, 0xff, 0xff);
-const COLORREF kDefaultBackgroundColor = RGB(0x00, 0x00, 0x00);
+const COLORREF kDefaultBackgroundColor = RGB(0xd0, 0xd0, 0xd0);
 // const COLORREF kSelectedRowFrameColor = RGB(0x7f, 0xac, 0xdd);
 const COLORREF kSelectedRowFrameColor = RGB(0x2f, 0x6c, 0x9d);
 // const COLORREF kIndicatorBackgroundColor = RGB(0xe0, 0xe0, 0xe0);

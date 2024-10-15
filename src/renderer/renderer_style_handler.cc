@@ -160,7 +160,7 @@ void RendererStyleHandlerImpl::GetDefaultRendererStyle(RendererStyle *style) {
   style->mutable_scrollbar_background_color()->set_g(0xe0);
   style->mutable_scrollbar_background_color()->set_b(0xe0);
 
-  // ksk これなんだろう…。スクロールバーの色かな？
+  // ksk これスクロールバーの色っぽい
   // style->mutable_scrollbar_indicator_color()->set_r(0x75);
   // style->mutable_scrollbar_indicator_color()->set_g(0x90);
   // style->mutable_scrollbar_indicator_color()->set_b(0xb8);
