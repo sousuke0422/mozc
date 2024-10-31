@@ -30,8 +30,8 @@
 #include "renderer/renderer_style_handler.h"
 
 #if defined(_WIN32)
-#include <windows.h>
 #include <wil/resource.h>
+#include <windows.h>
 #endif  // _WIN32
 
 #include "base/singleton.h"
@@ -93,9 +93,13 @@ void RendererStyleHandlerImpl::GetDefaultRendererStyle(RendererStyle *style) {
   shortcutStyle->mutable_foreground_color()->set_r(0x77);
   shortcutStyle->mutable_foreground_color()->set_g(0x77);
   shortcutStyle->mutable_foreground_color()->set_b(0x77);
-  shortcutStyle->mutable_background_color()->set_r(0xf3);
-  shortcutStyle->mutable_background_color()->set_g(0xf4);
-  shortcutStyle->mutable_background_color()->set_b(0xff);
+  // ksk
+  // shortcutStyle->mutable_background_color()->set_r(0xf3);
+  // shortcutStyle->mutable_background_color()->set_g(0xf4);
+  // shortcutStyle->mutable_background_color()->set_b(0xff);
+  shortcutStyle->mutable_background_color()->set_r(0x0b);
+  shortcutStyle->mutable_background_color()->set_g(0x0a);
+  shortcutStyle->mutable_background_color()->set_b(0x00);
   shortcutStyle->set_left_padding(8 * scale_factor_x);
   shortcutStyle->set_right_padding(8 * scale_factor_x);
 
@@ -134,9 +138,9 @@ void RendererStyleHandlerImpl::GetDefaultRendererStyle(RendererStyle *style) {
   color->set_r(96);
   color->set_r(96);
 
-  style->mutable_footer_top_color()->set_r(0xff);
-  style->mutable_footer_top_color()->set_g(0xff);
-  style->mutable_footer_top_color()->set_b(0xff);
+  style->mutable_footer_top_color()->set_r(0x00);
+  style->mutable_footer_top_color()->set_g(0x00);
+  style->mutable_footer_top_color()->set_b(0x00);
 
   style->mutable_footer_bottom_color()->set_r(0xee);
   style->mutable_footer_bottom_color()->set_g(0xee);
@@ -156,19 +160,27 @@ void RendererStyleHandlerImpl::GetDefaultRendererStyle(RendererStyle *style) {
   style->mutable_scrollbar_background_color()->set_g(0xe0);
   style->mutable_scrollbar_background_color()->set_b(0xe0);
 
-  style->mutable_scrollbar_indicator_color()->set_r(0x75);
-  style->mutable_scrollbar_indicator_color()->set_g(0x90);
-  style->mutable_scrollbar_indicator_color()->set_b(0xb8);
+  // ksk これスクロールバーの色っぽい
+  // style->mutable_scrollbar_indicator_color()->set_r(0x75);
+  // style->mutable_scrollbar_indicator_color()->set_g(0x90);
+  // style->mutable_scrollbar_indicator_color()->set_b(0xb8);
+  style->mutable_scrollbar_indicator_color()->set_r(0xa5);
+  style->mutable_scrollbar_indicator_color()->set_g(0xc0);
+  style->mutable_scrollbar_indicator_color()->set_b(0xf8);
 
   RendererStyle::InfolistStyle *infostyle = style->mutable_infolist_style();
+  // ksk 用例はここだろうな
   infostyle->set_caption_string("用例");
   infostyle->set_caption_height(20 * scale_factor_y);
   infostyle->set_caption_padding(1);
   infostyle->mutable_caption_style()->set_font_size(12 * scale_factor_y);
   infostyle->mutable_caption_style()->set_left_padding(2 * scale_factor_x);
-  infostyle->mutable_caption_background_color()->set_r(0xec);
-  infostyle->mutable_caption_background_color()->set_g(0xf0);
-  infostyle->mutable_caption_background_color()->set_b(0xfa);
+  // infostyle->mutable_caption_background_color()->set_r(0xec);
+  // infostyle->mutable_caption_background_color()->set_g(0xf0);
+  // infostyle->mutable_caption_background_color()->set_b(0xfa);
+  infostyle->mutable_caption_background_color()->set_r(0x1c);
+  infostyle->mutable_caption_background_color()->set_g(0x00);
+  infostyle->mutable_caption_background_color()->set_b(0x0a);
 
   infostyle->set_window_border(1);  // non-scalable
   infostyle->set_row_rect_padding(2 * scale_factor_x);

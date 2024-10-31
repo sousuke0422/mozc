@@ -69,16 +69,27 @@ CRect ToCRect(const Rect &rect) {
 
 COLORREF GetTextColor(TextRenderer::FONT_TYPE type) {
   switch (type) {
+    // ksk ↓これ多分数字のショートカットのところ
+    // case TextRenderer::FONTSET_SHORTCUT:
+    //   return RGB(0x61, 0x61, 0x61);
     case TextRenderer::FONTSET_SHORTCUT:
-      return RGB(0x61, 0x61, 0x61);
+      return RGB(0xa1, 0xa1, 0xa1);
+      // ksk
+    // case TextRenderer::FONTSET_CANDIDATE:
+    //   return RGB(0x00, 0x00, 0x00);
     case TextRenderer::FONTSET_CANDIDATE:
-      return RGB(0x00, 0x00, 0x00);
+      return RGB(0xff, 0xff, 0xff);
+    // ↓ksk これ多分候補の横の「ひらがな」とか「カタカナ」のやつ
     case TextRenderer::FONTSET_DESCRIPTION:
       return RGB(0x88, 0x88, 0x88);
+    // case TextRenderer::FONTSET_FOOTER_INDEX:
+    //   return RGB(0x4c, 0x4c, 0x4c);
+    // case TextRenderer::FONTSET_FOOTER_LABEL:
+    //   return RGB(0x4c, 0x4c, 0x4c);
     case TextRenderer::FONTSET_FOOTER_INDEX:
-      return RGB(0x4c, 0x4c, 0x4c);
+      return RGB(0xcc, 0xcc, 0xcc);
     case TextRenderer::FONTSET_FOOTER_LABEL:
-      return RGB(0x4c, 0x4c, 0x4c);
+      return RGB(0xcc, 0xcc, 0xcc);
     case TextRenderer::FONTSET_FOOTER_SUBLABEL:
       return RGB(0xA7, 0xA7, 0xA7);
     default:

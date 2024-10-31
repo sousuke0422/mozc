@@ -80,15 +80,26 @@ constexpr char kMinimumCandidateAndDescriptionWidthAsString[] =
     "そのほかの文字種";
 
 // Color scheme
-const COLORREF kFrameColor = RGB(0x96, 0x96, 0x96);
-const COLORREF kShortcutBackgroundColor = RGB(0xf3, 0xf4, 0xff);
-const COLORREF kSelectedRowBackgroundColor = RGB(0xd1, 0xea, 0xff);
-const COLORREF kDefaultBackgroundColor = RGB(0xff, 0xff, 0xff);
-const COLORREF kSelectedRowFrameColor = RGB(0x7f, 0xac, 0xdd);
-const COLORREF kIndicatorBackgroundColor = RGB(0xe0, 0xe0, 0xe0);
+// ksk
+// const COLORREF kFrameColor = RGB(0x96, 0x96, 0x96);
+const COLORREF kFrameColor = RGB(0x76, 0x76, 0x76);
+// const COLORREF kShortcutBackgroundColor = RGB(0xf3, 0xf4, 0xff);
+const COLORREF kShortcutBackgroundColor = RGB(0x03, 0x04, 0x0f);
+// const COLORREF kSelectedRowBackgroundColor = RGB(0xd1, 0xea, 0xff);
+const COLORREF kSelectedRowBackgroundColor = RGB(0x21, 0x3a, 0x4f);
+// kskこれが背景色っぽい
+// const COLORREF kDefaultBackgroundColor = RGB(0xff, 0xff, 0xff);
+const COLORREF kDefaultBackgroundColor = RGB(0x0f, 0x0f, 0x0f);
+// const COLORREF kSelectedRowFrameColor = RGB(0x7f, 0xac, 0xdd);
+const COLORREF kSelectedRowFrameColor = RGB(0x2f, 0x6c, 0x9d);
+// const COLORREF kIndicatorBackgroundColor = RGB(0xe0, 0xe0, 0xe0);
+const COLORREF kIndicatorBackgroundColor = RGB(0x10, 0x10, 0x10);
 const COLORREF kIndicatorColor = RGB(0x75, 0x90, 0xb8);
-const COLORREF kFooterTopColor = RGB(0xff, 0xff, 0xff);
-const COLORREF kFooterBottomColor = RGB(0xee, 0xee, 0xee);
+// const COLORREF kIndicatorColor = RGB(0x25, 0x40, 0x78);
+// const COLORREF kFooterTopColor = RGB(0xff, 0xff, 0xff);
+// const COLORREF kFooterBottomColor = RGB(0xee, 0xee, 0xee);
+const COLORREF kFooterTopColor = RGB(0x00, 0x00, 0x00);
+const COLORREF kFooterBottomColor = RGB(0x11, 0x11, 0x11);
 
 // ------------------------------------------------------------------------
 // Utility functions
