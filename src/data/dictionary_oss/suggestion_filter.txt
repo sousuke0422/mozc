@@ -1,3 +1,9 @@
 # suggestion_filter.txt:
 # A set of word which won't be shown in suggestion/prediction
 ただしイケメンに限る
+# from https://github.com/google/mozc/issues/422
+安室奈美恵実母殺害事件
+東京・埼玉連続幼女誘拐殺人事件
+東電OL殺人事件
+名古屋妊婦切り裂き殺人事件
+レッサーパンダ帽男殺人事件
