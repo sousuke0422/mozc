@@ -40,6 +40,7 @@
 #include "absl/strings/string_view.h"
 #include "base/number_util.h"
 #include "base/strings/assign.h"
+#include "composer/composer.h"
 #include "config/character_form_manager.h"
 #include "config/config_handler.h"
 #include "converter/segments.h"
@@ -216,8 +217,9 @@ TEST_F(NumberRewriterTest, RequestType) {
     candidate->rid = pos_matcher_.GetNumberId();
     candidate->value = "012";
     candidate->content_value = "012";
-    ConversionRequest request;
-    request.set_request_type(test_data.request_type_);
+    const ConversionRequest request =
+        ConversionRequestBuilder().SetRequestType(test_data.request_type_)
+            .Build();
     EXPECT_TRUE(number_rewriter->Rewrite(request, &segments));
     EXPECT_EQ(seg->candidates_size(), test_data.expected_candidate_number_);
   }
@@ -908,18 +910,20 @@ TEST_F(NumberRewriterTest, PreserveUserDictionaryAttribute) {
 TEST_F(NumberRewriterTest, DuplicateCandidateTest) {
   // To reproduce issue b/6714268.
   std::unique_ptr<NumberRewriter> number_rewriter(CreateNumberRewriter());
-  ConversionRequest convreq;
   commands::Request request;
-  convreq.set_request(&request);
   std::unique_ptr<NumberRewriter> rewriter(CreateNumberRewriter());
 
   {
     request.set_mixed_conversion(true);
+    const ConversionRequest convreq =
+      ConversionRequestBuilder().SetRequest(request).Build();
     EXPECT_EQ(rewriter->capability(convreq), RewriterInterface::ALL);
   }
 
   {
     request.set_mixed_conversion(false);
+    const ConversionRequest convreq =
+      ConversionRequestBuilder().SetRequest(request).Build();
     EXPECT_EQ(rewriter->capability(convreq), RewriterInterface::CONVERSION);
   }
 }
@@ -1160,10 +1164,7 @@ void LearnNumberStyle(const ConversionRequest &request,
 
 TEST_F(NumberRewriterTest, NumberStyleLearningNotEnabled) {
   std::unique_ptr<NumberRewriter> rewriter(CreateNumberRewriter());
-  commands::Request request;
-  ConversionRequest convreq(nullptr, &request,
-                            &config::ConfigHandler::DefaultConfig());
-
+  const ConversionRequest convreq;
   LearnNumberStyle(convreq, pos_matcher_, *rewriter);
 
   {
@@ -1197,8 +1198,8 @@ INSTANTIATE_TEST_SUITE_P(
 TEST_P(NumberStyleLearningTest, NumberRewriterTest) {
   std::unique_ptr<NumberRewriter> rewriter(CreateNumberRewriter());
   const commands::Request request = GetParam();
-  ConversionRequest convreq(nullptr, &request,
-                            &config::ConfigHandler::DefaultConfig());
+  const ConversionRequest convreq =
+      ConversionRequestBuilder().SetRequest(request).Build();
 
   LearnNumberStyle(convreq, pos_matcher_, *rewriter);
 

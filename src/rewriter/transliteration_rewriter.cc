@@ -58,10 +58,6 @@ namespace {
 
 bool IsComposerApplicable(const ConversionRequest &request,
                           const Segments *segments) {
-  if (!request.has_composer()) {
-    return false;
-  }
-
   std::string conversion_query;
   if (request.request_type() == ConversionRequest::PREDICTION ||
       request.request_type() == ConversionRequest::SUGGESTION) {
@@ -357,12 +353,7 @@ bool TransliterationRewriter::AddRawNumberT13nCandidates(
     // Rewriting multiple segments will not make users happier.
     return false;
   }
-  // This process is done on composer's data.
-  // If the request doesn't have a composer, this method can do nothing.
-  if (!request.has_composer()) {
-    return false;
-  }
-  const composer::Composer &composer = request.composer();
+  const composer::ComposerData &composer = request.composer();
   Segment *segment = segments->mutable_conversion_segment(0);
   // Get the half_ascii T13n text (nearly equal Raw input).
   // Note that only one segment is in the Segments, but sometimes like
