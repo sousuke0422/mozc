@@ -31,9 +31,8 @@
 #define MOZC_REQUEST_CONVERSION_REQUEST_H_
 
 #include <cstddef>
-#include <type_traits>
+#include <utility>
 
-#include "absl/base/attributes.h"
 #include "absl/log/check.h"
 #include "composer/composer.h"
 #include "config/config_handler.h"
@@ -75,198 +74,220 @@ class ConversionRequest {
     // of possible hiragana.
   };
 
+  struct Options {
+    RequestType request_type = CONVERSION;
+
+    // Which composer's method to use for conversion key; see the comment around
+    // the definition of ComposerKeySelection above.
+    ComposerKeySelection composer_key_selection = CONVERSION_KEY;
+
+    int max_conversion_candidates_size = kMaxConversionCandidatesSize;
+    int max_user_history_prediction_candidates_size = 3;
+    int max_user_history_prediction_candidates_size_for_zero_query = 4;
+    int max_dictionary_prediction_candidates_size = 20;
+
+    // If true, insert a top candidate from the actual (non-immutable) converter
+    // to realtime conversion results. Note that setting this true causes a big
+    // performance loss (3 times slower).
+    bool use_actual_converter_for_realtime_conversion = false;
+
+    // Don't use this flag directly. This flag is used by DictionaryPredictor to
+    // skip some heavy rewriters, such as UserBoundaryHistoryRewriter and
+    // TransliterationRewriter.
+    // TODO(noriyukit): Fix such a hacky handling for realtime conversion.
+    bool skip_slow_rewriters = false;
+
+    // If true, partial candidates are created on prediction/suggestion.
+    // For example, "私の" is created from composition "わたしのなまえ".
+    bool create_partial_candidates = false;
+
+    // If false, stop using user history for conversion.
+    // This is used for supporting CONVERT_WITHOUT_HISTORY command.
+    // Please refer to session/internal/keymap.h
+    bool enable_user_history_for_conversion = true;
+
+    // If true, enable kana modifier insensitive conversion.
+    bool kana_modifier_insensitive_conversion = true;
+
+    // If true, use conversion_segment(0).key() instead of ComposerData.
+    // TODO(b/365909808): Create a new string field to store the key.
+    bool use_conversion_segment_key_as_typing_corrected_key = false;
+  };
+
   ConversionRequest()
-      : ConversionRequest(nullptr, &commands::Request::default_instance(),
-                          &commands::Context::default_instance(),
-                          &config::ConfigHandler::DefaultConfig()) {}
-  // TODO: b/329532981 - Replace with the another constructor and remove this.
-  ABSL_DEPRECATED("Use the constructor with Context")
-  ConversionRequest(const composer::Composer *c,
-                    const commands::Request *request,
-                    const config::Config *config)
-      : ConversionRequest(c, request, &commands::Context::default_instance(),
-                          config) {}
-  ConversionRequest(const composer::Composer *c,
-                    const commands::Request *request,
-                    const commands::Context *context,
-                    const config::Config *config)
-      : request_type_(ConversionRequest::CONVERSION),
-        composer_(c),
+      : ConversionRequest(composer::Composer::CreateEmptyComposerData(),
+                          commands::Request::default_instance(),
+                          commands::Context::default_instance(),
+                          config::ConfigHandler::DefaultConfig(), Options()) {}
+
+  ConversionRequest(const composer::Composer &composer,
+                    const commands::Request &request,
+                    const commands::Context &context,
+                    const config::Config &config,
+                    Options &&options)
+      : ConversionRequest(composer.CreateComposerData(), request, context,
+                          config, std::move(options)) {}
+
+  // Remove unnecessary but potentially large options for ConversionRequest from
+  // Config and return it.
+  // TODO(b/365909808): Move this method to Session after updating the
+  // ConversionRequest constructor.
+  static config::Config TrimConfig(const config::Config &base_config) {
+    config::Config config = base_config;
+    config.clear_custom_keymap_table();
+    config.clear_custom_roman_table();
+    return config;
+  }
+
+  ConversionRequest(const composer::ComposerData &composer,
+                    const commands::Request &request,
+                    const commands::Context &context,
+                    const config::Config &config, Options &&options)
+      : composer_(composer),
         request_(request),
         context_(context),
-        config_(config) {}
+        config_(TrimConfig(config)),
+        options_(options) {}
 
-  // Copyable.
   ConversionRequest(const ConversionRequest &) = default;
-  ConversionRequest &operator=(const ConversionRequest &) = default;
+  ConversionRequest(ConversionRequest &&) = default;
 
-  RequestType request_type() const { return request_type_; }
-  void set_request_type(RequestType request_type) {
-    request_type_ = request_type;
-  }
+  // operator= are not available since this class has a const member.
+  ConversionRequest &operator=(const ConversionRequest &) = delete;
+  ConversionRequest &operator=(ConversionRequest &&) = delete;
 
-  bool has_composer() const { return composer_ != nullptr; }
-  const composer::Composer &composer() const {
-    DCHECK(composer_);
-    return *composer_;
-  }
-  void reset_composer() { composer_ = nullptr; }
+  RequestType request_type() const { return options_.request_type; }
+
+  const composer::ComposerData &composer() const { return composer_; }
 
   bool use_actual_converter_for_realtime_conversion() const {
-    return use_actual_converter_for_realtime_conversion_;
-  }
-  void set_use_actual_converter_for_realtime_conversion(bool value) {
-    use_actual_converter_for_realtime_conversion_ = value;
+    return options_.use_actual_converter_for_realtime_conversion;
   }
 
-  bool create_partial_candidates() const { return create_partial_candidates_; }
-  void set_create_partial_candidates(bool value) {
-    create_partial_candidates_ = value;
+  bool create_partial_candidates() const {
+    return options_.create_partial_candidates;
   }
 
   bool enable_user_history_for_conversion() const {
-    return enable_user_history_for_conversion_;
-  }
-  void set_enable_user_history_for_conversion(bool value) {
-    enable_user_history_for_conversion_ = value;
+    return options_.enable_user_history_for_conversion;
   }
 
   ComposerKeySelection composer_key_selection() const {
-    return composer_key_selection_;
-  }
-  void set_composer_key_selection(ComposerKeySelection selection) {
-    composer_key_selection_ = selection;
+    return options_.composer_key_selection;
   }
 
-  const commands::Request &request() const {
-    DCHECK(request_);
-    return *request_;
-  }
-  void set_request(const commands::Request *request) { request_ = request; }
-
-  const commands::Context &context() const {
-    DCHECK(context_);
-    return *context_;
-  }
-  void set_context(const commands::Context *context) { context_ = context; }
-
-  const config::Config &config() const {
-    DCHECK(config_);
-    return *config_;
-  }
-  void set_config(const config::Config *config) { config_ = config; }
+  const commands::Request &request() const { return request_; }
+  const commands::Context &context() const { return context_; }
+  const config::Config &config() const { return config_; }
+  const Options &options() const { return options_; }
 
   // TODO(noriyukit): Remove these methods after removing skip_slow_rewriters_
   // flag.
-  bool skip_slow_rewriters() const { return skip_slow_rewriters_; }
-  void set_skip_slow_rewriters(bool value) { skip_slow_rewriters_ = value; }
+  bool skip_slow_rewriters() const { return options_.skip_slow_rewriters; }
 
   bool IsKanaModifierInsensitiveConversion() const {
-    return request_->kana_modifier_insensitive_conversion() &&
-           config_->use_kana_modifier_insensitive_conversion() &&
-           kana_modifier_insensitive_conversion_;
+    return request_.kana_modifier_insensitive_conversion() &&
+           config_.use_kana_modifier_insensitive_conversion() &&
+           options_.kana_modifier_insensitive_conversion;
   }
 
   size_t max_conversion_candidates_size() const {
-    return max_conversion_candidates_size_;
-  }
-  void set_max_conversion_candidates_size(size_t value) {
-    max_conversion_candidates_size_ = value;
+    return options_.max_conversion_candidates_size;
   }
 
   size_t max_user_history_prediction_candidates_size() const {
-    return max_user_history_prediction_candidates_size_;
-  }
-  void set_max_user_history_prediction_candidates_size(size_t value) {
-    max_user_history_prediction_candidates_size_ = value;
+    return options_.max_user_history_prediction_candidates_size;
   }
 
   size_t max_user_history_prediction_candidates_size_for_zero_query() const {
-    return max_user_history_prediction_candidates_size_for_zero_query_;
-  }
-  void set_max_user_history_prediction_candidates_size_for_zero_query(
-      size_t value) {
-    max_user_history_prediction_candidates_size_for_zero_query_ = value;
+    return options_.max_user_history_prediction_candidates_size_for_zero_query;
   }
 
   size_t max_dictionary_prediction_candidates_size() const {
-    return max_dictionary_prediction_candidates_size_;
-  }
-  void set_max_dictionary_prediction_candidates_size(size_t value) {
-    max_dictionary_prediction_candidates_size_ = value;
+    return options_.max_dictionary_prediction_candidates_size;
   }
 
-  bool should_call_set_key_in_prediction() const {
-    return should_call_set_key_in_prediction_;
-  }
-  void set_should_call_set_key_in_prediction(bool value) {
-    should_call_set_key_in_prediction_ = value;
-  }
-
-  void set_kana_modifier_insensitive_conversion(bool value) {
-    kana_modifier_insensitive_conversion_ = value;
+  bool use_conversion_segment_key_as_typing_corrected_key() const {
+    return options_.use_conversion_segment_key_as_typing_corrected_key;
   }
 
  private:
-  RequestType request_type_ = CONVERSION;
-
-  // Required fields
+  // Required options
   // Input composer to generate a key for conversion, suggestion, etc.
-  const composer::Composer *composer_;
+  const composer::ComposerData composer_;
 
   // Input request.
-  const commands::Request *request_;
+  const commands::Request request_;
 
   // Input context.
-  const commands::Context *context_;
+  const commands::Context context_;
 
   // Input config.
-  const config::Config *config_;
+  const config::Config config_;
 
-  // Which composer's method to use for conversion key; see the comment around
-  // the definition of ComposerKeySelection above.
-  ComposerKeySelection composer_key_selection_ = CONVERSION_KEY;
-
-  int max_conversion_candidates_size_ = kMaxConversionCandidatesSize;
-  int max_user_history_prediction_candidates_size_ = 3;
-  int max_user_history_prediction_candidates_size_for_zero_query_ = 4;
-  int max_dictionary_prediction_candidates_size_ = 20;
-
-  // If true, insert a top candidate from the actual (non-immutable) converter
-  // to realtime conversion results. Note that setting this true causes a big
-  // performance loss (3 times slower).
-  bool use_actual_converter_for_realtime_conversion_ = false;
-
-  // Don't use this flag directly. This flag is used by DictionaryPredictor to
-  // skip some heavy rewriters, such as UserBoundaryHistoryRewriter and
-  // TransliterationRewriter.
-  // TODO(noriyukit): Fix such a hacky handling for realtime conversion.
-  bool skip_slow_rewriters_ = false;
-
-  // If true, partial candidates are created on prediction/suggestion.
-  // For example, "私の" is created from composition "わたしのなまえ".
-  bool create_partial_candidates_ = false;
-
-  // If false, stop using user history for conversion.
-  // This is used for supporting CONVERT_WITHOUT_HISTORY command.
-  // Please refer to session/internal/keymap.h
-  bool enable_user_history_for_conversion_ = true;
-
-  // If true, set conversion key to output segments in prediction.
-  bool should_call_set_key_in_prediction_ = false;
-
-  // If true, enable kana modifier insensitive conversion.
-  bool kana_modifier_insensitive_conversion_ = true;
-
-  // TODO(noriyukit): Moves all the members of Segments that are irrelevant to
-  // this structure, e.g., Segments::request_type_.
-  // Also, a key for conversion is eligible to live in this class.
+  // Options for conversion request.
+  Options options_;
 };
 
-// ConversionRequest is currently trivially copyable and destructible.
-// Make it movable if appropriate when you add non-trivial data members.
-static_assert(std::is_trivially_copyable_v<ConversionRequest>);
-static_assert(std::is_trivially_destructible_v<ConversionRequest>);
+class ConversionRequestBuilder {
+ public:
+  ConversionRequest Build() {
+    DCHECK(buildable_);
+    buildable_ = false;
+    return ConversionRequest(std::move(composer_data_), std::move(request_),
+                             std::move(context_), std::move(config_),
+                             std::move(options_));
+  }
+
+  ConversionRequestBuilder &SetConversionRequest(
+      const ConversionRequest &base_convreq) {
+    composer_data_ = base_convreq.composer();
+    request_ = base_convreq.request();
+    context_ = base_convreq.context();
+    config_ = base_convreq.config();
+    options_ = base_convreq.options();
+    return *this;
+  }
+
+  ConversionRequestBuilder &SetComposerData(
+      composer::ComposerData &&composer_data) {
+    composer_data_ = std::move(composer_data);
+    return *this;
+  }
+  ConversionRequestBuilder &SetComposer(const composer::Composer &composer) {
+    composer_data_ = composer.CreateComposerData();
+    return *this;
+  }
+  ConversionRequestBuilder &SetRequest(const commands::Request &request) {
+    request_ = request;
+    return *this;
+  }
+  ConversionRequestBuilder &SetContext(const commands::Context &context) {
+    context_ = context;
+    return *this;
+  }
+  ConversionRequestBuilder &SetConfig(const config::Config &config) {
+    config_ = config;
+    return *this;
+  }
+  ConversionRequestBuilder &SetOptions(ConversionRequest::Options &&options) {
+    options_ = std::move(options);
+    return *this;
+  }
+  ConversionRequestBuilder &SetRequestType(
+      ConversionRequest::RequestType request_type) {
+    options_.request_type = request_type;
+    return *this;
+  }
+
+ private:
+  bool buildable_ = true;
+  composer::ComposerData composer_data_;
+  commands::Request request_;
+  commands::Context context_;
+  config::Config config_;
+  ConversionRequest::Options options_;
+};
 
 }  // namespace mozc
 

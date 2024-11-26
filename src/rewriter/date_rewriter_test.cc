@@ -555,7 +555,8 @@ TEST_F(DateRewriterTest, NumberRewriterTest) {
   const commands::Request request;
   const config::Config config;
   const composer::Composer composer(nullptr, &request, &config);
-  const ConversionRequest conversion_request(&composer, &request, &config);
+  const ConversionRequest conversion_request =
+      ConversionRequestBuilder().SetComposer(composer).Build();
 
   // Not targets of rewrite.
   const char *kNonTargetCases[] = {
@@ -918,7 +919,6 @@ TEST_F(DateRewriterTest, NumberRewriterFromRawInputTest) {
   table.AddRule("222", "c", "");
   table.AddRule("3", "d", "");
   const commands::Request request;
-  const commands::Context context;
   const config::Config config;
   composer::Composer composer(&table, &request, &config);
 
@@ -929,7 +929,9 @@ TEST_F(DateRewriterTest, NumberRewriterFromRawInputTest) {
     InitSegment("cd", "cd", &segments);
     composer.Reset();
     composer.InsertCharacter("2223");
-    ConversionRequest conv_request(&composer, &request, &context, &config);
+    const ConversionRequest conv_request =
+        ConversionRequestBuilder().SetComposer(composer).Build();
+
     EXPECT_TRUE(rewriter.Rewrite(conv_request, &segments));
     ASSERT_EQ(segments.segments_size(), 1);
     EXPECT_THAT(segments.segment(0), ContainsCandidate(ValueIs("22:23")));
@@ -943,7 +945,8 @@ TEST_F(DateRewriterTest, NumberRewriterFromRawInputTest) {
     InitSegment("1111", "1111", &segments);
     composer.Reset();
     composer.InsertCharacter("2223");
-    ConversionRequest conv_request(&composer, &request, &context, &config);
+    const ConversionRequest conv_request =
+        ConversionRequestBuilder().SetComposer(composer).Build();
     EXPECT_TRUE(rewriter.Rewrite(conv_request, &segments));
     ASSERT_EQ(segments.segments_size(), 1);
     EXPECT_THAT(segments.segment(0), ContainsCandidate(ValueIs("11:11")));
@@ -961,7 +964,8 @@ TEST_F(DateRewriterTest, NumberRewriterFromRawInputTest) {
     meta_candidate->value = "1111";
     composer.InsertCharacter("2223");
     composer.Reset();
-    ConversionRequest conv_request(&composer, &request, &context, &config);
+    const ConversionRequest conv_request =
+        ConversionRequestBuilder().SetComposer(composer).Build();
     EXPECT_TRUE(rewriter.Rewrite(conv_request, &segments));
     ASSERT_EQ(segments.segments_size(), 1);
     EXPECT_THAT(segments.segment(0), ContainsCandidate(ValueIs("11:11")));
@@ -970,18 +974,20 @@ TEST_F(DateRewriterTest, NumberRewriterFromRawInputTest) {
 }
 
 TEST_F(DateRewriterTest, MobileEnvironmentTest) {
-  ConversionRequest convreq;
   commands::Request request;
-  convreq.set_request(&request);
   DateRewriter rewriter;
 
   {
     request.set_mixed_conversion(true);
+    const ConversionRequest convreq =
+        ConversionRequestBuilder().SetRequest(request).Build();
     EXPECT_EQ(rewriter.capability(convreq), RewriterInterface::ALL);
   }
 
   {
     request.set_mixed_conversion(false);
+    const ConversionRequest convreq =
+        ConversionRequestBuilder().SetRequest(request).Build();
     EXPECT_EQ(rewriter.capability(convreq), RewriterInterface::CONVERSION);
   }
 }
@@ -990,7 +996,6 @@ TEST_F(DateRewriterTest, ConsecutiveDigitsInsertPositionTest) {
   commands::Request request;
   const config::Config config;
   const composer::Composer composer(nullptr, &request, &config);
-  const ConversionRequest conversion_request(&composer, &request, &config);
 
   // Init an instance of Segments for this test.
   Segments test_segments;
@@ -1002,6 +1007,10 @@ TEST_F(DateRewriterTest, ConsecutiveDigitsInsertPositionTest) {
   {
     request.set_special_romanji_table(
         commands::Request::QWERTY_MOBILE_TO_HALFWIDTHASCII);
+    const ConversionRequest conversion_request = ConversionRequestBuilder()
+                                                     .SetComposer(composer)
+                                                     .SetRequest(request)
+                                                     .Build();
 
     DateRewriter rewriter;
     Segments segments = test_segments;
@@ -1021,6 +1030,10 @@ TEST_F(DateRewriterTest, ConsecutiveDigitsInsertPositionTest) {
   {
     request.set_special_romanji_table(
         commands::Request::TOGGLE_FLICK_TO_HIRAGANA);
+    const ConversionRequest conversion_request = ConversionRequestBuilder()
+                                                     .SetComposer(composer)
+                                                     .SetRequest(request)
+                                                     .Build();
 
     DateRewriter rewriter;
     Segments segments = test_segments;
@@ -1040,7 +1053,8 @@ TEST_F(DateRewriterTest, ConsecutiveDigitsFromMetaCandidates) {
   commands::Request request;
   const config::Config config;
   const composer::Composer composer(nullptr, &request, &config);
-  const ConversionRequest conversion_request(&composer, &request, &config);
+  const ConversionRequest conversion_request =
+      ConversionRequestBuilder().SetComposer(composer).Build();
 
   Segments segments;
   InitSegment("nisen", "にせん", &segments);
@@ -1057,7 +1071,8 @@ TEST_F(DateRewriterTest, ConsecutiveDigitsWithMinusSign) {
   commands::Request request;
   const config::Config config;
   const composer::Composer composer(nullptr, &request, &config);
-  const ConversionRequest conversion_request(&composer, &request, &config);
+  const ConversionRequest conversion_request =
+      ConversionRequestBuilder().SetComposer(composer).Build();
 
   // Init an instance of Segments for this test.
   Segments segments;
@@ -1082,7 +1097,8 @@ TEST_F(DateRewriterTest, ConsecutiveDigitsInsertPositionWithHistory) {
   commands::Request request;
   const config::Config config;
   const composer::Composer composer(nullptr, &request, &config);
-  const ConversionRequest conversion_request(&composer, &request, &config);
+  const ConversionRequest conversion_request =
+      ConversionRequestBuilder().SetComposer(composer).Build();
 
   Segments segments;
 

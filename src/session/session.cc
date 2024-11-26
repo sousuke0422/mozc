@@ -1933,7 +1933,7 @@ void Session::CommitCompositionDirectly(commands::Command *command) {
 void Session::CommitSourceTextDirectly(commands::Command *command) {
   // We cannot use a reference since composer will be cleared on
   // CommitStringDirectly.
-  const std::string copied_source_text = context_->composer().source_text();
+  absl::string_view copied_source_text = context_->composer().source_text();
   CommitStringDirectly(copied_source_text, copied_source_text, command);
 }
 
@@ -1942,8 +1942,8 @@ void Session::CommitRawTextDirectly(commands::Command *command) {
   CommitStringDirectly(raw_text, raw_text, command);
 }
 
-void Session::CommitStringDirectly(const std::string &key,
-                                   const std::string &preedit,
+void Session::CommitStringDirectly(absl::string_view key,
+                                   absl::string_view preedit,
                                    commands::Command *command) {
   if (key.empty() || preedit.empty()) {
     return;
@@ -2291,27 +2291,18 @@ bool Session::UndoOrRewind(commands::Command *command) {
   }
 
   // Rewind if the state is in composition.
-  if (context_->state() & ImeContext::COMPOSITION) {
-    command->mutable_output()->set_consumed(true);
-    return SendComposerCommand(composer::Composer::REWIND, command);
-  }
-
-  // Mozc decoder doesn't do anything for UNDO_OR_REWIND.
-  // Echo back the event to the client to give it a chance to delegate
-  // undo operation to the app.
-  return EchoBack(command);
-}
-
-bool Session::SendComposerCommand(
-    const composer::Composer::InternalCommand composer_command,
-    commands::Command *command) {
   if (!(context_->state() & ImeContext::COMPOSITION)) {
-    DLOG(WARNING) << "State : " << context_->state();
-    return false;
+    // Mozc decoder doesn't do anything for UNDO_OR_REWIND.
+    // Echo back the event to the client to give it a chance to delegate
+    // undo operation to the app.
+    return EchoBack(command);
   }
 
-  context_->mutable_composer()->InsertCommandCharacter(composer_command);
+  command->mutable_output()->set_consumed(true);
+  context_->mutable_composer()->InsertCommandCharacter(
+      composer::Composer::REWIND);
   ClearUndoContext();
+
   // InsertCommandCharacter method updates the preedit text
   // so we need to update suggest candidates.
   if (Suggest(command->input())) {
@@ -2319,6 +2310,22 @@ bool Session::SendComposerCommand(
     return true;
   }
   OutputComposition(command);
+  return true;
+}
+
+bool Session::StopKeyToggling(commands::Command *command) {
+  if (!(context_->state() & ImeContext::COMPOSITION)) {
+    return DoNothing(command);
+  }
+
+  command->mutable_output()->set_consumed(true);
+  context_->mutable_composer()->InsertCommandCharacter(
+      composer::Composer::STOP_KEY_TOGGLING);
+  ClearUndoContext();
+
+  // Since the output should not be changed on STOP_KEY_TOGGLING,
+  // The last output is used instead of calling the converter operations.
+  Output(command);
   return true;
 }
 
@@ -2339,14 +2346,6 @@ bool Session::DeleteCandidateFromHistory(commands::Command *command) {
     return DoNothing(command);
   }
   return ConvertCancel(command);
-}
-
-bool Session::StopKeyToggling(commands::Command *command) {
-  if (context_->state() & ImeContext::COMPOSITION) {
-    command->mutable_output()->set_consumed(true);
-    return SendComposerCommand(composer::Composer::STOP_KEY_TOGGLING, command);
-  }
-  return DoNothing(command);
 }
 
 bool Session::Convert(commands::Command *command) {

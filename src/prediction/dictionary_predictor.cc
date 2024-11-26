@@ -101,9 +101,8 @@ bool IsDebug(const ConversionRequest &request) {
 }
 
 bool IsLatinInputMode(const ConversionRequest &request) {
-  return (request.has_composer() &&
-          (request.composer().GetInputMode() == transliteration::HALF_ASCII ||
-           request.composer().GetInputMode() == transliteration::FULL_ASCII));
+  return request.composer().GetInputMode() == transliteration::HALF_ASCII ||
+         request.composer().GetInputMode() == transliteration::FULL_ASCII;
 }
 
 bool IsMixedConversionEnabled(const Request &request) {
@@ -724,7 +723,6 @@ void DictionaryPredictor::FillCandidate(
   DCHECK(candidate);
 
   const bool cursor_at_tail =
-      request.has_composer() &&
       request.composer().GetCursor() == request.composer().GetLength();
 
   strings::Assign(candidate->content_key, key_value.key);
@@ -1228,11 +1226,17 @@ int DictionaryPredictor::CalculatePrefixPenalty(
   int penalty = 0;
   Segments tmp_segments;
   tmp_segments.add_segment()->set_key(Util::Utf8SubString(input_key, key_len));
-  ConversionRequest req = request;
-  req.set_max_conversion_candidates_size(1);
+
+  ConversionRequest::Options options = request.options();
+  options.max_conversion_candidates_size = 1;
   // Explicitly request conversion result for the entire key.
-  req.set_create_partial_candidates(false);
-  req.set_kana_modifier_insensitive_conversion(false);
+  options.create_partial_candidates = false;
+  options.kana_modifier_insensitive_conversion = false;
+  const ConversionRequest req = ConversionRequestBuilder()
+                                    .SetConversionRequest(request)
+                                    .SetOptions(std::move(options))
+                                    .Build();
+
   if (immutable_converter->ConvertForRequest(req, &tmp_segments) &&
       tmp_segments.segment(0).candidates_size() > 0) {
     const Segment::Candidate &top_candidate =

@@ -84,13 +84,14 @@ class T13nPromotionRewriterTest : public testing::TestWithTempUserProfile {
   }
 
   ConversionRequest CreateMobileConversionRequest() const {
-    return ConversionRequest(&composer_, &mobile_request_, &context_,
-                             &config::ConfigHandler::DefaultConfig());
+    return ConversionRequestBuilder()
+        .SetComposer(composer_)
+        .SetRequest(mobile_request_)
+        .Build();
   }
 
   std::unique_ptr<TransliterationRewriter> t13n_rewriter_;
   composer::Composer composer_;
-  commands::Context context_;
   commands::Request mobile_request_;
 
  private:
@@ -105,9 +106,7 @@ TEST_F(T13nPromotionRewriterTest, Capability) {
   EXPECT_EQ(rewriter.capability(mobile_conv_request), RewriterInterface::ALL);
 
   // Desktop
-  commands::Request default_request;
   ConversionRequest default_conv_request;
-  default_conv_request.set_request(&default_request);
   EXPECT_EQ(rewriter.capability(default_conv_request),
             RewriterInterface::NOT_AVAILABLE);
 }
