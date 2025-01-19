@@ -37,7 +37,7 @@
 #include "absl/status/status.h"
 #include "converter/connector.h"
 #include "converter/segmenter.h"
-#include "data_manager/data_manager_interface.h"
+#include "data_manager/data_manager.h"
 #include "dictionary/dictionary_interface.h"
 #include "dictionary/pos_group.h"
 #include "dictionary/pos_matcher.h"
@@ -56,7 +56,7 @@ class Modules {
   Modules(const Modules &) = delete;
   Modules &operator=(const Modules &) = delete;
 
-  absl::Status Init(std::unique_ptr<const DataManagerInterface> data_manager);
+  absl::Status Init(std::unique_ptr<const DataManager> data_manager);
 
   // Preset functions must be called before Init.
   void PresetPosMatcher(
@@ -74,7 +74,7 @@ class Modules {
       std::unique_ptr<const prediction::SingleKanjiPredictionAggregator>
           single_kanji_prediction_aggregator);
 
-  const DataManagerInterface &GetDataManager() const {
+  const DataManager &GetDataManager() const {
     // DataManager must be valid.
     DCHECK(data_manager_);
     return *data_manager_;
@@ -116,14 +116,19 @@ class Modules {
   const engine::SupplementalModelInterface *GetSupplementalModel() const {
     return supplemental_model_;
   }
+
+  engine::SupplementalModelInterface *GetMutableSupplementalModel() {
+    return supplemental_model_;
+  }
+
   void SetSupplementalModel(
-      const engine::SupplementalModelInterface *supplemental_model) {
+      engine::SupplementalModelInterface *supplemental_model) {
     supplemental_model_ = supplemental_model;
   }
 
  private:
   bool initialized_ = false;
-  std::unique_ptr<const DataManagerInterface> data_manager_;
+  std::unique_ptr<const DataManager> data_manager_;
   std::unique_ptr<const dictionary::PosMatcher> pos_matcher_;
   std::unique_ptr<dictionary::SuppressionDictionary> suppression_dictionary_;
   Connector connector_;
@@ -137,11 +142,8 @@ class Modules {
       single_kanji_prediction_aggregator_;
   ZeroQueryDict zero_query_dict_;
   ZeroQueryDict zero_query_number_dict_;
-
-  // SupplementalModel used for homonym correction.
-  // Module doesn't have the ownership of supplemental_model_,
-  // SessionHandler owns this this instance. (usually a singleton object).
-  const engine::SupplementalModelInterface *supplemental_model_ = nullptr;
+  // The owner of supplemental_model_ is Engine.
+  engine::SupplementalModelInterface *supplemental_model_ = nullptr;
 };
 
 }  // namespace engine

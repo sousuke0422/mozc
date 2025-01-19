@@ -27,24 +27,27 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "engine/engine_factory.h"
-
-#include <memory>
+#ifndef MOZC_CONVERTER_REVERSE_CONVERTER_H_
+#define MOZC_CONVERTER_REVERSE_CONVERTER_H_
 
 #include "absl/strings/string_view.h"
-#include "engine/engine_interface.h"
-#include "testing/gunit.h"
+#include "converter/immutable_converter_interface.h"
+#include "converter/segments.h"
 
 namespace mozc {
 
-TEST(EngineFactoryTest, MobilePredictorOnAndroid) {
-  std::unique_ptr<EngineInterface> engine = EngineFactory::Create().value();
-  absl::string_view name = engine->GetPredictorName();
-#ifdef __ANDROID__
-  EXPECT_EQ(name, "MobilePredictor");
-#else   // __ANDROID__
-  EXPECT_EQ(name, "DefaultPredictor");
-#endif  // __ANDROID__
-}
+namespace converter {
+class ReverseConverter {
+ public:
+  explicit ReverseConverter(
+      const ImmutableConverterInterface &immutable_converter);
 
+  bool ReverseConvert(absl::string_view key, Segments *segments) const;
+
+ private:
+  const ImmutableConverterInterface &immutable_converter_;
+};
+}  // namespace converter
 }  // namespace mozc
+
+#endif  // MOZC_CONVERTER_REVERSE_CONVERTER_H_

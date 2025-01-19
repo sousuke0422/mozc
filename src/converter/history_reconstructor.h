@@ -27,40 +27,41 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// UserDataManagerInterface is responsible for the management of the
-// user data in the persistent storage, i.e. syncing, reloading, or
-// clear-out.
+#ifndef MOZC_CONVERTER_HISTORY_RECONSTRUCTOR_H_
+#define MOZC_CONVERTER_HISTORY_RECONSTRUCTOR_H_
 
-#ifndef MOZC_ENGINE_USER_DATA_MANAGER_INTERFACE_H_
-#define MOZC_ENGINE_USER_DATA_MANAGER_INTERFACE_H_
+#include <cstdint>
+#include <string>
 
+#include "absl/base/attributes.h"
 #include "absl/strings/string_view.h"
+#include "converter/segments.h"
+#include "dictionary/pos_matcher.h"
+#include "testing/friend_test.h"
 
 namespace mozc {
+namespace converter {
 
-class UserDataManagerInterface {
+class HistoryReconstructor {
  public:
-  virtual ~UserDataManagerInterface() = default;
+  explicit HistoryReconstructor(const dictionary::PosMatcher &pos_matcher);
 
-  // Syncs mutable user data to local file system.
-  virtual bool Sync() = 0;
+  ABSL_MUST_USE_RESULT
+  bool ReconstructHistory(absl::string_view preceding_text,
+                          Segments *segments) const;
 
-  // Reloads mutable user data from local file system.
-  virtual bool Reload() = 0;
+ private:
+  FRIEND_TEST(HistoryReconstructorTest, GetLastConnectivePart);
 
-  // Clears user history data.
-  virtual bool ClearUserHistory() = 0;
+  // Returns the substring of |str|. This substring consists of similar script
+  // type and you can use it as preceding text for conversion.
+  bool GetLastConnectivePart(absl::string_view preceding_text, std::string *key,
+                             std::string *value, uint16_t *id) const;
 
-  // Clears user prediction data.
-  virtual bool ClearUserPrediction() = 0;
-
-  // Clears unused user prediction data.
-  virtual bool ClearUnusedUserPrediction() = 0;
-
-  // Waits for syncer thread to complete.
-  virtual bool Wait() = 0;
+  const dictionary::PosMatcher &pos_matcher_;
 };
 
+}  // namespace converter
 }  // namespace mozc
 
-#endif  // MOZC_ENGINE_USER_DATA_MANAGER_INTERFACE_H_
+#endif  // MOZC_CONVERTER_HISTORY_RECONSTRUCTOR_H_

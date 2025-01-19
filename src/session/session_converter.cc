@@ -69,8 +69,6 @@ using ::mozc::commands::Request;
 using ::mozc::config::Config;
 using ::mozc::usage_stats::UsageStats;
 
-constexpr size_t kDefaultMaxHistorySize = 3;
-
 absl::string_view GetCandidateShortcuts(
     config::Config::SelectionShortcut selection_shortcut) {
   // Keyboard shortcut for candidates.
@@ -93,15 +91,6 @@ absl::string_view GetCandidateShortcuts(
       break;
   }
   return shortcut;
-}
-
-// Creates ConversionRequest to fill incognito candidate words.
-ConversionRequest CreateIncognitoConversionRequest(
-    const ConversionRequest &base_request, const Config &incognito_config) {
-  return ConversionRequestBuilder()
-      .SetConversionRequest(base_request)
-      .SetConfig(incognito_config)
-      .Build();
 }
 
 // Calculate cursor offset for committed text.
@@ -287,10 +276,13 @@ bool SessionConverter::ConvertToTransliteration(
     // preedit as a single segment.  We should modify
     // converter/converter.cc to enable to accept mozc::Segment::FIXED
     // from the session layer.
-    if (segments_.conversion_segments_size() != 1) {
-      std::string composition;
-      GetPreedit(0, segments_.conversion_segments_size(), &composition);
-      ResizeSegmentWidth(composer, Util::CharsLen(composition));
+    if (segment_index_ + 1 != segments_.conversion_segments_size()) {
+      size_t offset = 0;
+      for (const Segment &segment :
+           segments_.conversion_segments().drop(segment_index_ + 1)) {
+        offset += Util::CharsLen(segment.key());
+      }
+      ResizeSegmentWidth(composer, offset);
     }
 
     DCHECK(CheckState(CONVERSION));
@@ -792,8 +784,8 @@ void SessionConverter::CommitSegmentsInternal(
   candidate_list_visible_ = false;
   *consumed_key_size = 0;
 
-  // If the number of segments is one, just call Commit.
-  if (segments_.conversion_segments_size() == segments_to_commit) {
+  // If commit all segments, just call Commit.
+  if (segments_.conversion_segments_size() <= segments_to_commit) {
     Commit(composer, context);
     return;
   }
@@ -810,15 +802,11 @@ void SessionConverter::CommitSegmentsInternal(
   std::vector<size_t> candidate_ids;
   for (size_t i = 0; i < segments_to_commit; ++i) {
     // Get the i-th (0 origin) conversion segment and the selected candidate.
-    Segment *segment = segments_.mutable_conversion_segment(i);
-    if (!segment) {
-      LOG(ERROR) << "There is no segment on position " << i;
-      return;
-    }
+    const Segment &segment = segments_.conversion_segment(i);
 
     // Accumulate the size of i-th segment's key.
     // The caller will remove corresponding characters from the composer.
-    *consumed_key_size += Util::CharsLen(segment->key());
+    *consumed_key_size += Util::CharsLen(segment.key());
 
     // Collect candidate's id for each segment.
     candidate_ids.push_back(GetCandidateIndexForConverter(i));
@@ -987,23 +975,6 @@ void SessionConverter::SegmentWidthExpand(const composer::Composer &composer) {
 
 void SessionConverter::SegmentWidthShrink(const composer::Composer &composer) {
   ResizeSegmentWidth(composer, -1);
-}
-
-const Segment::Candidate *
-SessionConverter::GetSelectedCandidateOfFocusedSegment() const {
-  if (!candidate_list_.focused()) {
-    return nullptr;
-  }
-  const Candidate &cand = candidate_list_.focused_candidate();
-  return GetCandidateById(cand.id());
-}
-
-const Segment::Candidate *SessionConverter::GetCandidateById(int id) const {
-  const Segment &segment = segments_.conversion_segment(segment_index_);
-  if (!segment.is_valid_index(id)) {
-    return nullptr;
-  }
-  return &segment.candidate(id);
 }
 
 void SessionConverter::CandidateNext(const composer::Composer &composer) {

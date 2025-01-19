@@ -50,7 +50,7 @@ Building on Mac requires the following software.
   * Xcode 13 (macOS 13 SDK) or later
   * ⚠️Xcode Command Line Tools aren't sufficient.
 * [Bazel](https://docs.bazel.build/versions/master/install-os-x.html) for Bazel build
-  * ⚠️ Bazel 8.x is not yet supported ([#1118](https://github.com/google/mozc/issues/1118))
+  * check [src/.bazelversion](../src/.bazelversion) for the supported Bazel version.
 * Python 3.9 or later with the following pip module.
   * `requests`
 * CMake 3.18.4 or later (to build Qt6)
@@ -134,7 +134,7 @@ brew install cmake
 ### Build installer
 
 ```
-MOZC_QT_PATH=${PWD}/third_party/qt bazel build package --config oss_macos --config release_build
+MOZC_QT_PATH=${PWD}/third_party/qt bazelisk build package --config oss_macos --config release_build
 open bazel-bin/mac/Mozc.pkg
 ```
 
@@ -143,21 +143,21 @@ open bazel-bin/mac/Mozc.pkg
 To build an Intel64 macOS binary regardless of the host CPU architecture.
 ```
 python3 build_tools/build_qt.py --release --debug --confirm_license --macos_cpus=x64_64
-MOZC_QT_PATH=${PWD}/third_party/qt bazel build package --config oss_macos --config release_build --macos_cpus=x64_64
+MOZC_QT_PATH=${PWD}/third_party/qt bazelisk build package --config oss_macos --config release_build --macos_cpus=x64_64
 open bazel-bin/mac/Mozc.pkg
 ```
 
 To build a Universal macOS Binary both x86_64 and arm64.
 ```
 python3 build_tools/build_qt.py --release --debug --confirm_license --macos_cpus=x86_64,arm64
-MOZC_QT_PATH=${PWD}/third_party/qt bazel build package --config oss_macos --config release_build --macos_cpus=x86_64,arm64
+MOZC_QT_PATH=${PWD}/third_party/qt bazelisk build package --config oss_macos --config release_build --macos_cpus=x86_64,arm64
 open bazel-bin/mac/Mozc.pkg
 ```
 
 ### Unit tests
 
 ```
-MOZC_QT_PATH=${PWD}/third_party/qt bazel test ... --config oss_macos --build_tests_only -c dbg
+MOZC_QT_PATH=${PWD}/third_party/qt bazelisk test ... --config oss_macos --build_tests_only -c dbg
 ```
 
 See [build Mozc in Docker](build_mozc_in_docker.md#unittests) for details.
@@ -197,7 +197,7 @@ Files in the GitHub Actions page remain available up to 90 days.
 You can also find Mozc Installers for macOS in google/mozc repository. Please keep in mind that Mozc is not an officially supported Google product, even if downloaded from https://github.com/google/mozc/.
 
 1. Sign in GitHub.
-2. Check [recent successfull macOS runs](https://github.com/google/mozc/actions/workflows/macos.yaml?query=is%3Asuccess) in google/mozc repository.
+2. Check [recent successful macOS runs](https://github.com/google/mozc/actions/workflows/macos.yaml?query=is%3Asuccess) in google/mozc repository.
 3. Find action in last 90 days and click it.
 4. Download `Mozc.pkg` from the action result page.
 

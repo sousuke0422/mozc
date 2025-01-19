@@ -49,7 +49,7 @@
 #include "converter/node.h"
 #include "converter/segmenter.h"
 #include "data_manager/connection_file_reader.h"
-#include "data_manager/data_manager_interface.h"
+#include "data_manager/data_manager.h"
 #include "dictionary/pos_matcher.h"
 #include "prediction/suggestion_filter.h"
 #include "testing/gunit.h"
@@ -60,7 +60,7 @@ using ::mozc::dictionary::PosMatcher;
 }  // namespace
 
 DataManagerTestBase::DataManagerTestBase(
-    DataManagerInterface *data_manager, const size_t lsize, const size_t rsize,
+    DataManager *data_manager, const size_t lsize, const size_t rsize,
     IsBoundaryFunc is_boundary, const std::string &connection_txt_file,
     const int expected_resolution, std::vector<std::string> dictionary_files,
     std::vector<std::string> suggestion_filter_files)
@@ -251,12 +251,8 @@ void DataManagerTestBase::SuggestionFilterTest_IsBadSuggestion() {
 }
 
 void DataManagerTestBase::CounterSuffixTest_ValidateTest() {
-  const char *data = nullptr;
-  size_t data_size = 0;
-  data_manager_->GetCounterSuffixSortedArray(&data, &data_size);
-
   SerializedStringArray suffix_array;
-  ASSERT_TRUE(suffix_array.Init(absl::string_view(data, data_size)));
+  ASSERT_TRUE(suffix_array.Init(data_manager_->GetCounterSuffixSortedArray()));
 
   // Check if the array is sorted in ascending order.
   absl::string_view prev_suffix;  // The smallest string.

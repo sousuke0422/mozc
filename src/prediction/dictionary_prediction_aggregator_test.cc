@@ -55,7 +55,7 @@
 #include "converter/converter_mock.h"
 #include "converter/immutable_converter_interface.h"
 #include "converter/segments.h"
-#include "data_manager/data_manager_interface.h"
+#include "data_manager/data_manager.h"
 #include "data_manager/testing/mock_data_manager.h"
 #include "dictionary/dictionary_interface.h"
 #include "dictionary/dictionary_mock.h"
@@ -373,8 +373,7 @@ class MockImmutableConverter : public ImmutableConverterInterface {
 class MockSingleKanjiPredictionAggregator
     : public SingleKanjiPredictionAggregator {
  public:
-  explicit MockSingleKanjiPredictionAggregator(
-      const DataManagerInterface &data_manager)
+  explicit MockSingleKanjiPredictionAggregator(const DataManager &data_manager)
       : SingleKanjiPredictionAggregator(data_manager) {}
   ~MockSingleKanjiPredictionAggregator() override = default;
   MOCK_METHOD(std::vector<Result>, AggregateResults,
@@ -426,7 +425,7 @@ class MockDataAndAggregator {
     return *aggregator_;
   }
   void set_supplemental_model(
-      const engine::SupplementalModelInterface *supplemental_model) {
+      engine::SupplementalModelInterface *supplemental_model) {
     modules_.SetSupplementalModel(supplemental_model);
   }
 
@@ -1619,13 +1618,11 @@ TEST_F(DictionaryPredictionAggregatorTest,
   Segment *segment = segments.add_segment();
 
   constexpr size_t kMaxSize = 100;
-  const ConversionRequest suggestion_convreq =
-      CreateConversionRequest(
+  const ConversionRequest suggestion_convreq = CreateConversionRequest(
       {.request_type = ConversionRequest::SUGGESTION,
        .max_dictionary_prediction_candidates_size = kMaxSize});
-      CreateSuggestionConversionRequest();
-  const ConversionRequest prediction_convreq =
-      CreateConversionRequest(
+  CreateSuggestionConversionRequest();
+  const ConversionRequest prediction_convreq = CreateConversionRequest(
       {.request_type = ConversionRequest::PREDICTION,
        .max_dictionary_prediction_candidates_size = kMaxSize});
 

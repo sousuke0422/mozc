@@ -27,7 +27,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "engine/minimal_engine.h"
+#include "engine/minimal_converter.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -39,32 +39,12 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
 #include "base/strings/assign.h"
-#include "composer/composer.h"
 #include "converter/converter_interface.h"
 #include "converter/segments.h"
-#include "data_manager/data_manager.h"
-#include "data_manager/data_manager_interface.h"
-#include "dictionary/suppression_dictionary.h"
-#include "engine/user_data_manager_interface.h"
-#include "prediction/predictor_interface.h"
 #include "request/conversion_request.h"
 
 namespace mozc {
 namespace {
-
-using ::mozc::prediction::PredictorInterface;
-
-class UserDataManagerStub : public UserDataManagerInterface {
- public:
-  UserDataManagerStub() = default;
-
-  bool Sync() override { return true; }
-  bool Reload() override { return true; }
-  bool ClearUserHistory() override { return true; }
-  bool ClearUserPrediction() override { return true; }
-  bool ClearUnusedUserPrediction() override { return true; }
-  bool Wait() override { return true; }
-};
 
 bool AddAsIsCandidate(const absl::string_view key, Segments *segments) {
   if (key.empty()) {
@@ -93,8 +73,7 @@ bool AddAsIsCandidate(const absl::string_view key, Segments *segments) {
 }
 
 bool AddAsIsCandidate(const ConversionRequest &request, Segments *segments) {
-  const std::string key = request.composer().GetQueryForConversion();
-  return AddAsIsCandidate(key, segments);
+  return AddAsIsCandidate(request.key(), segments);
 }
 
 class MinimalConverter : public ConverterInterface {
@@ -164,58 +143,16 @@ class MinimalConverter : public ConverterInterface {
     return true;
   }
 
-  bool ResizeSegment(Segments *segments, const ConversionRequest &request,
-                     size_t start_segment_index, size_t segments_size,
-                     absl::Span<const uint8_t> new_size_array) const override {
+  bool ResizeSegments(Segments *segments, const ConversionRequest &request,
+                      size_t start_segment_index,
+                      absl::Span<const uint8_t> new_size_array) const override {
     return true;
   }
 };
-
-class MinimalPredictor : public PredictorInterface {
- public:
-  MinimalPredictor() : name_("MinimalPredictor") {}
-
-  bool PredictForRequest(const ConversionRequest &request,
-                         Segments *segments) const override {
-    return AddAsIsCandidate(request, segments);
-  }
-
-  const std::string &GetPredictorName() const override { return name_; }
-
- private:
-  const std::string name_;
-};
-
 }  // namespace
 
-MinimalEngine::MinimalEngine()
-    : converter_(std::make_unique<MinimalConverter>()),
-      predictor_(std::make_unique<MinimalPredictor>()),
-      suppression_dictionary_(
-          std::make_unique<dictionary::SuppressionDictionary>()),
-      user_data_manager_(std::make_unique<UserDataManagerStub>()),
-      data_manager_(std::make_unique<DataManager>()) {}
-
-ConverterInterface *MinimalEngine::GetConverter() const {
-  return converter_.get();
+std::unique_ptr<ConverterInterface> CreateMinimalConverter() {
+  return std::make_unique<MinimalConverter>();
 }
-
-absl::string_view MinimalEngine::GetPredictorName() const {
-  return predictor_ ? predictor_->GetPredictorName() : absl::string_view();
-}
-
-dictionary::SuppressionDictionary *MinimalEngine::GetSuppressionDictionary() {
-  return suppression_dictionary_.get();
-}
-
-UserDataManagerInterface *MinimalEngine::GetUserDataManager() {
-  return user_data_manager_.get();
-}
-
-const DataManagerInterface *MinimalEngine::GetDataManager() const {
-  return data_manager_.get();
-}
-
-std::vector<std::string> MinimalEngine::GetPosList() const { return {}; }
 
 }  // namespace mozc

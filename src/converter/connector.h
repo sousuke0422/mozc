@@ -37,7 +37,7 @@
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
-#include "data_manager/data_manager_interface.h"
+#include "data_manager/data_manager.h"
 #include "storage/louds/simple_succinct_bit_vector_index.h"
 
 namespace mozc {
@@ -47,10 +47,9 @@ class Connector final {
   static constexpr int16_t kInvalidCost = 30000;
 
   static absl::StatusOr<Connector> CreateFromDataManager(
-      const DataManagerInterface &data_manager);
+      const DataManager &data_manager);
 
-  static absl::StatusOr<Connector> Create(const char *connection_data,
-                                          size_t connection_size,
+  static absl::StatusOr<Connector> Create(absl::string_view connection_data,
                                           int cache_size);
 
   int GetTransitionCost(uint16_t rid, uint16_t lid) const;
@@ -61,8 +60,7 @@ class Connector final {
  private:
   class Row;
 
-  absl::Status Init(const char *connection_data, size_t connection_size,
-                    int cache_size);
+  absl::Status Init(absl::string_view connection_data, int cache_size);
 
   int LookupCost(uint16_t rid, uint16_t lid) const;
 

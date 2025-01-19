@@ -27,27 +27,17 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "converter/immutable_converter_interface.h"
+#ifndef MOZC_ENGINE_MINIMAL_CONVERTER_H_
+#define MOZC_ENGINE_MINIMAL_CONVERTER_H_
 
-#include "absl/log/log.h"
-#include "converter/segments.h"
-#include "request/conversion_request.h"
+#include <memory>
+
+#include "converter/converter_interface.h"
 
 namespace mozc {
 
-// This method is a proxy to the ConvertForRequest to keep the backward
-// compatibility.
-// TODO(hidehiko): Get rid of this method when we deprecate it.
-bool ImmutableConverterInterface::Convert(Segments *segments) const {
-  const ConversionRequest request;
-  return ConvertForRequest(request, segments);
-}
-
-bool ImmutableConverterInterface::ConvertForRequest(
-    const ConversionRequest &request, Segments *segments) const {
-  // TODO(hidehiko): Get rid of this default implementation.
-  LOG(FATAL) << "Please implement ConvertForRequest method.";
-  return false;
-}
+std::unique_ptr<ConverterInterface> CreateMinimalConverter();
 
 }  // namespace mozc
+
+#endif  // MOZC_ENGINE_MINIMAL_CONVERTER_H_

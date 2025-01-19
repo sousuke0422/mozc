@@ -32,6 +32,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <limits>
 #include <memory>
 #include <string>
@@ -40,7 +41,9 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
 #include "converter/converter_interface.h"
+#include "converter/history_reconstructor.h"
 #include "converter/immutable_converter_interface.h"
+#include "converter/reverse_converter.h"
 #include "converter/segments.h"
 #include "dictionary/pos_matcher.h"
 #include "dictionary/suppression_dictionary.h"
@@ -54,13 +57,26 @@ namespace mozc {
 
 class Converter final : public ConverterInterface {
  public:
-  Converter() = default;
+  using ImmutableConverterFactory =
+      std::function<std::unique_ptr<const ImmutableConverterInterface>(
+          const engine::Modules &modules)>;
 
-  // Lazily initializes the internal members. Must be called before the use.
-  void Init(const engine::Modules &modules,
-            std::unique_ptr<prediction::PredictorInterface> predictor,
-            std::unique_ptr<RewriterInterface> rewriter,
-            ImmutableConverterInterface *immutable_converter);
+  using PredictorFactory =
+      std::function<std::unique_ptr<prediction::PredictorInterface>(
+          const engine::Modules &modules, const ConverterInterface *converter,
+          const ImmutableConverterInterface *immutable_converter)>;
+
+  using RewriterFactory = std::function<std::unique_ptr<RewriterInterface>(
+      const engine::Modules &modules)>;
+
+  // Converter is initialized with the factory methods of ImmutableConverter,
+  // Predictor and Rewriter, so that all these sub components share the
+  // same resources and modules. Converter creates these sub modules and holds
+  // their ownership.
+  Converter(std::unique_ptr<engine::Modules> modules,
+            const ImmutableConverterFactory &immutable_converter_factory,
+            const PredictorFactory &predictor_factory,
+            const RewriterFactory &rewriter_factory);
 
   ABSL_MUST_USE_RESULT
   bool StartConversion(const ConversionRequest &request,
@@ -105,16 +121,39 @@ class Converter final : public ConverterInterface {
                                           const ConversionRequest &request,
                                           size_t segment_index,
                                           int offset_length) const override;
-  ABSL_MUST_USE_RESULT bool ResizeSegment(
+  ABSL_MUST_USE_RESULT bool ResizeSegments(
       Segments *segments, const ConversionRequest &request,
-      size_t start_segment_index, size_t segments_size,
+      size_t start_segment_index,
       absl::Span<const uint8_t> new_size_array) const override;
+
+  // Execute ImmutableConverter, Rewriters, SuppressionDictionary.
+  // ApplyConversion does not initialize the Segment unlike StartConversion.
+  void ApplyConversion(Segments *segments,
+                       const ConversionRequest &request) const;
+
+  // Reloads internal data, e.g., user dictionary, etc.
+  bool Reload();
+
+  // Synchronizes internal data, e.g., user dictionary, etc.
+  bool Sync();
+
+  // Waits for pending operations executed in different threads.
+  bool Wait();
+
+  prediction::PredictorInterface *predictor() const { return predictor_.get(); }
+
+  RewriterInterface *rewriter() const { return rewriter_.get(); }
+
+  const ImmutableConverterInterface *immutable_converter() const {
+    return immutable_converter_.get();
+  }
+
+  engine::Modules *modules() const { return modules_.get(); }
 
  private:
   FRIEND_TEST(ConverterTest, CompletePosIds);
   FRIEND_TEST(ConverterTest, DefaultPredictor);
   FRIEND_TEST(ConverterTest, MaybeSetConsumedKeySizeToSegment);
-  FRIEND_TEST(ConverterTest, GetLastConnectivePart);
   FRIEND_TEST(ConverterTest, PredictSetKey);
 
   // Complete Left id/Right id if they are not defined.
@@ -158,12 +197,16 @@ class Converter final : public ConverterInterface {
   bool GetLastConnectivePart(absl::string_view preceding_text, std::string *key,
                              std::string *value, uint16_t *id) const;
 
-  const dictionary::PosMatcher *pos_matcher_ = nullptr;
-  const dictionary::SuppressionDictionary *suppression_dictionary_;
+  std::unique_ptr<engine::Modules> modules_;
+  std::unique_ptr<const ImmutableConverterInterface> immutable_converter_;
   std::unique_ptr<prediction::PredictorInterface> predictor_;
   std::unique_ptr<RewriterInterface> rewriter_;
-  const ImmutableConverterInterface *immutable_converter_ = nullptr;
-  uint16_t general_noun_id_ = std::numeric_limits<uint16_t>::max();
+
+  const dictionary::PosMatcher &pos_matcher_;
+  const dictionary::SuppressionDictionary &suppression_dictionary_;
+  const converter::HistoryReconstructor history_reconstructor_;
+  const converter::ReverseConverter reverse_converter_;
+  const uint16_t general_noun_id_ = std::numeric_limits<uint16_t>::max();
 };
 
 }  // namespace mozc

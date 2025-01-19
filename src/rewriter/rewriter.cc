@@ -32,8 +32,7 @@
 #include <memory>
 
 #include "absl/flags/flag.h"
-#include "converter/converter_interface.h"
-#include "data_manager/data_manager_interface.h"
+#include "data_manager/data_manager.h"
 #include "dictionary/dictionary_interface.h"
 #include "dictionary/pos_group.h"
 #include "dictionary/pos_matcher.h"
@@ -85,9 +84,8 @@ ABSL_FLAG(bool, use_history_rewriter, true, "Use history rewriter or not.");
 
 namespace mozc {
 
-Rewriter::Rewriter(const engine::Modules &modules,
-                   const ConverterInterface &parent_converter) {
-  const DataManagerInterface *data_manager = &modules.GetDataManager();
+Rewriter::Rewriter(const engine::Modules &modules) {
+  const DataManager *data_manager = &modules.GetDataManager();
   const dictionary::DictionaryInterface *dictionary = modules.GetDictionary();
   const dictionary::PosMatcher &pos_matcher = *modules.GetPosMatcher();
   const dictionary::PosGroup *pos_group = modules.GetPosGroup();
@@ -103,23 +101,21 @@ Rewriter::Rewriter(const engine::Modules &modules,
   AddRewriter(std::make_unique<IvsVariantsRewriter>());
   AddRewriter(std::make_unique<EmojiRewriter>(*data_manager));
   AddRewriter(EmoticonRewriter::CreateFromDataManager(*data_manager));
-  AddRewriter(std::make_unique<CalculatorRewriter>(&parent_converter));
-  AddRewriter(
-      std::make_unique<SymbolRewriter>(&parent_converter, data_manager));
-  AddRewriter(std::make_unique<UnicodeRewriter>(&parent_converter));
+  AddRewriter(std::make_unique<CalculatorRewriter>());
+  AddRewriter(std::make_unique<SymbolRewriter>(data_manager));
+  AddRewriter(std::make_unique<UnicodeRewriter>());
   AddRewriter(std::make_unique<VariantsRewriter>(pos_matcher));
   AddRewriter(std::make_unique<ZipcodeRewriter>(pos_matcher));
   AddRewriter(std::make_unique<DiceRewriter>());
-  AddRewriter(std::make_unique<SmallLetterRewriter>(&parent_converter));
+  AddRewriter(std::make_unique<SmallLetterRewriter>());
 
   if (absl::GetFlag(FLAGS_use_history_rewriter)) {
-    AddRewriter(
-        std::make_unique<UserBoundaryHistoryRewriter>(&parent_converter));
+    AddRewriter(std::make_unique<UserBoundaryHistoryRewriter>());
     AddRewriter(
         std::make_unique<UserSegmentHistoryRewriter>(&pos_matcher, pos_group));
   }
 
-  AddRewriter(std::make_unique<DateRewriter>(&parent_converter, dictionary));
+  AddRewriter(std::make_unique<DateRewriter>(dictionary));
   AddRewriter(std::make_unique<FortuneRewriter>());
 #if !(defined(__ANDROID__) || (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE))
   // CommandRewriter is not tested well on Android or iOS.
